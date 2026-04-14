@@ -1,135 +1,276 @@
-import { useEffect, useState } from 'react';
-import { fetchUserAchievements, recordPurchase } from '../api/achievements';
-import AchievementList from '../components/AchievementList';
-import BadgeDisplay from '../components/BadgeDisplay';
-import ProgressBar from '../components/ProgressBar';
+import confetti from 'canvas-confetti';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { fetchUsers } from '../api/achievements';
+import AchievementGrid from '../components/AchievementGrid';
+import BadgeHero from '../components/BadgeHero';
+import BadgeProgressBar from '../components/BadgeProgressBar';
+import StatsRow from '../components/StatsRow';
+import UserSelector from '../components/UserSelector';
+import { useAchievements } from '../hooks/useAchievements';
+import { usePurchase } from '../hooks/usePurchase';
+
+function fireConfetti(type = 'achievement') {
+  const opts =
+    type === 'badge'
+      ? {
+          particleCount: 160,
+          spread: 100,
+          origin: { y: 0.55 },
+          colors: ['#fbbf24', '#d97706', '#f59e0b', '#ffffff'],
+        }
+      : {
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#6366f1', '#8b5cf6', '#a855f7', '#ffffff'],
+        };
+  confetti(opts);
+}
 
 export default function AchievementsDashboard() {
-  const [userId, setUserId]         = useState('1');
-  const [inputId, setInputId]       = useState('1');
-  const [data, setData]             = useState(null);
-  const [loading, setLoading]       = useState(false);
-  const [purchasing, setPurchasing] = useState(false);
-  const [error, setError]           = useState(null);
+  const [users, setUsers]           = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
   const [toast, setToast]           = useState(null);
+  const [purchaseCount, setPurchaseCount] = useState(0);
+  const toastTimer                  = useRef(null);
 
-  function load(id) {
-    setLoading(true);
-    setError(null);
-    fetchUserAchievements(id)
-      .then(setData)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }
+  const {
+    data, loading, error, reload, newlyUnlocked, badgeUpgraded,
+  } = useAchievements(selectedId);
+
+  const { purchase, loading: purchasing } = usePurchase(selectedId, async () => {
+    setPurchaseCount((c) => c + 1);
+    await reload();
+  });
+
+  // Load users on mount
+  useEffect(() => {
+    fetchUsers()
+      .then((list) => {
+        setUsers(list);
+        if (list.length > 0) setSelectedId(list[0].id);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Sync purchase count from API data
+  useEffect(() => {
+    if (data) {
+      // derive total purchases from API context — not returned directly,
+      // but we keep a local optimistic counter for display
+    }
+  }, [data]);
+
+  // Confetti and toast on unlock events
+  useEffect(() => {
+    if (newlyUnlocked.length > 0) {
+      fireConfetti('achievement');
+      showToast(
+        newlyUnlocked.length === 1
+          ? `🎉 Achievement unlocked: ${newlyUnlocked[0]}!`
+          : `🎉 ${newlyUnlocked.length} achievements unlocked!`
+      );
+    }
+  }, [newlyUnlocked.join(',')]); // eslint-disable-line
 
   useEffect(() => {
-    load(userId);
-  }, [userId]);
-
-  function handleSearch(e) {
-    e.preventDefault();
-    setUserId(inputId.trim());
-  }
+    if (badgeUpgraded && data) {
+      setTimeout(() => fireConfetti('badge'), 300);
+      showToast(`🏅 Badge upgraded to ${data.current_badge}! +₦300 cashback!`);
+    }
+  }, [badgeUpgraded]); // eslint-disable-line
 
   function showToast(msg) {
+    clearTimeout(toastTimer.current);
     setToast(msg);
-    setTimeout(() => setToast(null), 3000);
+    toastTimer.current = setTimeout(() => setToast(null), 4000);
   }
 
-  async function handlePurchase() {
-    setPurchasing(true);
-    try {
-      const result = await recordPurchase(userId, 500);
-      showToast(`Purchase #${result.total_purchases} recorded!`);
-      load(userId);
-    } catch (err) {
-      showToast(`Error: ${err.message}`);
-    } finally {
-      setPurchasing(false);
-    }
-  }
+  const totalAchievements = 8;
+  const unlockedCount     = data?.unlocked_achievements?.length ?? 0;
 
   return (
-    <div className="dashboard">
-      {toast && <div className="toast">{toast}</div>}
+    <div className="page">
+      {/* Toast */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            className="toast"
+            key="toast"
+            initial={{ opacity: 0, y: 30, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: 20, x: '-50%' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+          >
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <header className="dashboard-header">
-        <h1 className="dashboard-title">Loyalty Rewards</h1>
-        <p className="dashboard-subtitle">Track your achievements and badges</p>
+      {/* Header */}
+      <header className="page-header">
+        <motion.div
+          className="header-brand"
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+        >
+          <div className="header-logo">✦</div>
+          <div>
+            <h1 className="header-title">Loyalty Rewards</h1>
+            <p className="header-subtitle">Earn achievements. Unlock badges. Get rewarded.</p>
+          </div>
+        </motion.div>
 
-        <form className="user-form" onSubmit={handleSearch}>
-          <input
-            type="number"
-            min="1"
-            value={inputId}
-            onChange={(e) => setInputId(e.target.value)}
-            placeholder="User ID"
-            className="user-input"
-          />
-          <button type="submit" className="btn-primary">Load</button>
-        </form>
+        {users.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.15 }}
+          >
+            <UserSelector
+              users={users}
+              selectedId={selectedId}
+              onChange={(id) => {
+                setSelectedId(id);
+                setPurchaseCount(0);
+              }}
+            />
+          </motion.div>
+        )}
       </header>
 
-      <main className="dashboard-main">
-        {loading && (
-          <div className="state-container">
-            <div className="spinner" />
-            <p>Loading achievements…</p>
+      <main className="page-main">
+        {/* Error state */}
+        <AnimatePresence>
+          {error && !loading && (
+            <motion.div
+              className="error-banner"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+            >
+              <span>⚠ {error}</span>
+              <button className="btn-ghost" onClick={reload}>Retry</button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Loading skeleton */}
+        {loading && !data && (
+          <div className="skeleton-layout">
+            <div className="skeleton-card tall" />
+            <div className="skeleton-right">
+              <div className="skeleton-card" />
+              <div className="skeleton-card short" />
+            </div>
           </div>
         )}
 
-        {error && !loading && (
-          <div className="state-container error-state">
-            <p>⚠ {error}</p>
-            <button className="btn-primary" onClick={() => load(userId)}>Retry</button>
-          </div>
-        )}
-
-        {data && !loading && (
-          <>
-            <div className="content-grid">
-              <section className="card badge-section">
-                <h2 className="card-title">Your Badge</h2>
-                <BadgeDisplay
+        {/* Main content */}
+        {data && (
+          <motion.div
+            className="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* Top row: badge + progress */}
+            <div className="top-grid">
+              <motion.div
+                className="glass-card badge-card"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 26 }}
+              >
+                <BadgeHero
                   currentBadge={data.current_badge}
                   nextBadge={data.next_badge}
+                  achievementCount={unlockedCount}
+                  totalAchievements={totalAchievements}
                 />
-                {data.next_badge && (
-                  <ProgressBar
-                    current={data.remaining_to_unlock_next_badge}
-                    total={
-                      data.remaining_to_unlock_next_badge +
-                      data.unlocked_achievements.length
-                    }
-                    label={`Progress to ${data.next_badge}`}
+              </motion.div>
+
+              <div className="right-col">
+                <motion.div
+                  className="glass-card"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 26, delay: 0.08 }}
+                >
+                  <StatsRow
+                    purchaseCount={purchaseCount}
+                    unlockedCount={unlockedCount}
                   />
-                )}
-                {!data.next_badge && (
-                  <p className="max-badge-msg">🎉 You have reached the highest badge!</p>
-                )}
-              </section>
+                </motion.div>
 
-              <section className="card achievements-section">
-                <AchievementList
-                  unlocked={data.unlocked_achievements}
-                  nextAvailable={data.next_available_achievements}
-                />
-              </section>
+                <motion.div
+                  className="glass-card"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 26, delay: 0.14 }}
+                >
+                  <BadgeProgressBar
+                    currentBadge={data.current_badge}
+                    nextBadge={data.next_badge}
+                    unlocked={unlockedCount}
+                    remaining={data.remaining_to_unlock_next_badge}
+                  />
+                </motion.div>
+              </div>
             </div>
 
-            <div className="simulate-section">
-              <button
-                className="btn-simulate"
-                onClick={handlePurchase}
+            {/* Achievement grid */}
+            <motion.div
+              className="glass-card"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, type: 'spring', stiffness: 240, damping: 28 }}
+            >
+              <AchievementGrid
+                unlocked={data.unlocked_achievements}
+                nextAvailable={data.next_available_achievements}
+                newlyUnlocked={newlyUnlocked}
+              />
+            </motion.div>
+
+            {/* Simulate purchase */}
+            <motion.div
+              className="cta-section"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.28 }}
+            >
+              <motion.button
+                className="btn-purchase"
+                onClick={purchase}
                 disabled={purchasing}
+                whileHover={!purchasing ? { scale: 1.04, y: -2 } : {}}
+                whileTap={!purchasing ? { scale: 0.97 } : {}}
               >
-                {purchasing ? 'Processing…' : '+ Simulate Purchase (₦500)'}
-              </button>
-              <p className="simulate-hint">
-                Each click records a purchase and recalculates your rewards in real time.
+                {purchasing ? (
+                  <>
+                    <motion.span
+                      className="btn-spinner"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }}
+                    />
+                    Processing…
+                  </>
+                ) : (
+                  <>
+                    <span className="btn-icon">🛒</span>
+                    Simulate Purchase <span className="btn-amount">₦500</span>
+                  </>
+                )}
+              </motion.button>
+              <p className="cta-hint">
+                Each purchase is recorded and the full event chain runs in real time —
+                achievements unlock, badges upgrade, and ₦300 cashback is issued automatically.
               </p>
-            </div>
-          </>
+            </motion.div>
+          </motion.div>
         )}
       </main>
     </div>
