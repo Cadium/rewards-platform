@@ -1,0 +1,357 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:           #f8f9fb;
+  --surface:      #ffffff;
+  --border:       #e5e7eb;
+  --text:         #374151;
+  --text-muted:   #6b7280;
+  --text-heading: #111827;
+  --accent:       #6366f1;
+  --accent-light: #eef2ff;
+  --success:      #059669;
+  --success-light:#ecfdf5;
+  --shadow:       0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.06);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:           #0f1117;
+    --surface:      #1a1d27;
+    --border:       #2d3044;
+    --text:         #d1d5db;
+    --text-muted:   #9ca3af;
+    --text-heading: #f3f4f6;
+    --accent:       #818cf8;
+    --accent-light: #1e1b4b;
+    --success:      #34d399;
+    --success-light:#064e3b;
+  }
+}
+
+body { min-height: 100vh; }
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Dashboard shell ─────────────────────────────────────── */
+.dashboard {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+  width: 100%;
+}
+
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.dashboard-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.5px;
+}
+
+.dashboard-subtitle {
+  color: var(--text-muted);
+  margin-top: 6px;
+  font-size: 0.95rem;
+}
+
+/* ── User search form ────────────────────────────────────── */
+.user-form {
+  display: inline-flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.user-input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-heading);
+  font-size: 0.9rem;
+  width: 120px;
+  outline: none;
+  transition: border-color .15s;
+}
+
+.user-input:focus { border-color: var(--accent); }
+
+.btn-primary {
+  padding: 8px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+
+.btn-primary:hover { opacity: 0.85; }
+
+/* ── Main content grid ───────────────────────────────────── */
+.dashboard-main { flex: 1; }
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 680px) {
+  .content-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Card ────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 18px;
+}
+
+/* ── Badge display ───────────────────────────────────────── */
+.badge-display { margin-bottom: 20px; }
+
+.current-badge {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 2px solid;
+  border-radius: 10px;
+  background: var(--accent-light);
+  margin-bottom: 12px;
+}
+
+.badge-icon { font-size: 2.2rem; line-height: 1; }
+
+.badge-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.badge-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.next-badge-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.next-badge-name {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.max-badge-msg {
+  font-size: 0.9rem;
+  color: var(--success);
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+/* ── Progress bar ────────────────────────────────────────── */
+.progress-wrapper { margin-top: 16px; }
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.progress-count { font-weight: 600; color: var(--text); }
+
+.progress-track {
+  height: 8px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #a855f7);
+  border-radius: 99px;
+  transition: width .4s ease;
+}
+
+/* ── Achievement list ────────────────────────────────────── */
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 14px;
+}
+
+.empty-state {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 10px;
+}
+
+.achievement-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.achievement-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.achievement-card.unlocked {
+  background: var(--success-light);
+  color: var(--success);
+  border: 1px solid #a7f3d0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .achievement-card.unlocked { border-color: #065f46; }
+}
+
+.achievement-card.next {
+  background: var(--accent-light);
+  color: var(--accent);
+  border: 1px dashed var(--accent);
+  opacity: 0.9;
+}
+
+.achievement-check { font-size: 1rem; flex-shrink: 0; }
+.achievement-lock  { font-size: 1rem; flex-shrink: 0; }
+
+.achievement-name { flex: 1; }
+
+.achievement-tag {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  background: var(--accent);
+  color: #fff;
+  padding: 2px 7px;
+  border-radius: 99px;
+}
+
+/* ── States ──────────────────────────────────────────────── */
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.error-state { color: #ef4444; }
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Simulate purchase ───────────────────────────────────── */
+.simulate-section {
+  text-align: center;
+  margin-top: 28px;
+}
+
+.btn-simulate {
+  padding: 12px 28px;
+  background: linear-gradient(135deg, var(--accent), #a855f7);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  box-shadow: 0 4px 14px rgba(99,102,241,.35);
+}
+
+.btn-simulate:hover:not(:disabled) {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.btn-simulate:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.simulate-hint {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ── Toast notification ──────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text-heading);
+  color: var(--bg);
+  padding: 10px 22px;
+  border-radius: 99px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: var(--shadow);
+  z-index: 100;
+  animation: fadeup .25s ease;
+}
+
+@keyframes fadeup {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
