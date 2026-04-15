@@ -7,6 +7,7 @@ use App\Models\Badge;
 use App\Models\Purchase;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
@@ -52,11 +53,14 @@ class DatabaseSeeder extends Seeder
             ->orderBy('required_purchases')
             ->get();
 
-        foreach ($achievements as $achievement) {
+        // Stagger unlock timestamps so ordering is always deterministic
+        $base = Carbon::now()->subDays($achievements->count());
+
+        foreach ($achievements as $index => $achievement) {
             DB::table('user_achievements')->insert([
                 'user_id'        => $user->id,
                 'achievement_id' => $achievement->id,
-                'unlocked_at'    => now(),
+                'unlocked_at'    => $base->copy()->addDays($index),
             ]);
         }
 
@@ -66,11 +70,12 @@ class DatabaseSeeder extends Seeder
             ->orderBy('min_achievements')
             ->get();
 
-        foreach ($badges as $badge) {
+        // Each badge earned one second apart so the highest is unambiguously latest
+        foreach ($badges as $index => $badge) {
             DB::table('user_badges')->insert([
                 'user_id'     => $user->id,
                 'badge_id'    => $badge->id,
-                'unlocked_at' => now(),
+                'unlocked_at' => Carbon::now()->subSeconds($badges->count() - $index),
             ]);
         }
     }

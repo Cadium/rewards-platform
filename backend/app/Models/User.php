@@ -34,15 +34,13 @@ class User extends Authenticatable
     public function achievements(): BelongsToMany
     {
         return $this->belongsToMany(Achievement::class, 'user_achievements')
-            ->withPivot('unlocked_at')
-            ->orderByPivot('unlocked_at');
+            ->withPivot('unlocked_at');
     }
 
     public function badges(): BelongsToMany
     {
         return $this->belongsToMany(Badge::class, 'user_badges')
-            ->withPivot('unlocked_at')
-            ->orderByPivot('unlocked_at');
+            ->withPivot('unlocked_at');
     }
 
     public function currentBadge(): ?Badge

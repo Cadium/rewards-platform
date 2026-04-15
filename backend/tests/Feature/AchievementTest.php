@@ -118,8 +118,9 @@ class AchievementTest extends TestCase
 
         $data = $response->json();
 
-        $this->assertContains('First Purchase', $data['unlocked_achievements']);
-        $this->assertContains('5 Purchases', $data['unlocked_achievements']);
+        $names = array_column($data['unlocked_achievements'], 'name');
+        $this->assertContains('First Purchase', $names);
+        $this->assertContains('5 Purchases', $names);
         $this->assertNotEmpty($data['next_available_achievements']);
     }
 

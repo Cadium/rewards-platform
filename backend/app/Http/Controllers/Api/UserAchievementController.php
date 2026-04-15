@@ -12,12 +12,17 @@ class UserAchievementController extends Controller
 {
     public function show(User $user): JsonResponse
     {
-        $unlockedAchievements = $user->achievements()
+        // Unlocked achievements with their unlock timestamps
+        $unlockedRows = $user->achievements()
             ->orderBy('required_purchases')
-            ->pluck('name')
-            ->toArray();
+            ->get(['achievements.id', 'achievements.name', 'user_achievements.unlocked_at']);
 
-        $unlockedIds = $user->achievements()->pluck('achievements.id');
+        $unlockedAchievements = $unlockedRows->map(fn ($a) => [
+            'name'        => $a->name,
+            'unlocked_at' => $a->pivot->unlocked_at,
+        ])->values()->toArray();
+
+        $unlockedIds = $unlockedRows->pluck('id');
 
         $nextAvailable = Achievement::whereNotIn('id', $unlockedIds)
             ->orderBy('required_purchases')
@@ -27,32 +32,26 @@ class UserAchievementController extends Controller
 
         $achievementCount = count($unlockedAchievements);
 
+        // Current badge = highest unlocked (latest unlocked_at wins)
         $currentBadge = $user->badges()
             ->orderByPivot('unlocked_at', 'desc')
             ->first();
 
-        // Fall back to 'Beginner' (min_achievements = 0) if no badge earned yet
         if (! $currentBadge) {
             $currentBadge = Badge::where('min_achievements', 0)->first();
         }
 
+        // Next badge = the lowest badge whose threshold is still above the user's count
         $nextBadge = Badge::where('min_achievements', '>', $achievementCount)
             ->orderBy('min_achievements')
             ->first();
-
-        // If the user hasn't earned even the first badge yet, next badge
-        // is the lowest one above Beginner that they still need
-        if (! $nextBadge && $currentBadge) {
-            $nextBadge = Badge::where('min_achievements', '>', $currentBadge->min_achievements)
-                ->orderBy('min_achievements')
-                ->first();
-        }
 
         $remainingToUnlockNextBadge = $nextBadge
             ? max(0, $nextBadge->min_achievements - $achievementCount)
             : 0;
 
         return response()->json([
+            'purchase_count'                 => $user->purchases()->count(),
             'unlocked_achievements'          => $unlockedAchievements,
             'next_available_achievements'    => $nextAvailable,
             'current_badge'                  => $currentBadge?->name ?? 'Beginner',
