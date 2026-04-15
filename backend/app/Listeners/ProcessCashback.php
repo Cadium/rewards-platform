@@ -3,9 +3,10 @@
 namespace App\Listeners;
 
 use App\Events\BadgeUnlocked;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 
-class ProcessCashback
+class ProcessCashback implements ShouldQueue
 {
     public function handle(BadgeUnlocked $event): void
     {

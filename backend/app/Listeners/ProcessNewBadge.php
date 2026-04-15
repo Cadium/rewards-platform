@@ -13,22 +13,23 @@ class ProcessNewBadge
     {
         $user = $event->user;
 
-        $achievementCount = $user->achievements()->count();
+        $newlyUnlocked = DB::transaction(function () use ($user) {
+            $achievementCount = $user->achievements()->count();
+            $unlockedBadgeIds = $user->badges()->pluck('badges.id');
 
-        $unlockedBadgeIds = $user->badges()->pluck('badges.id');
+            $badges = Badge::whereNotIn('id', $unlockedBadgeIds)
+                ->where('min_achievements', '<=', $achievementCount)
+                ->orderBy('min_achievements')
+                ->get();
 
-        $newlyUnlocked = Badge::whereNotIn('id', $unlockedBadgeIds)
-            ->where('min_achievements', '<=', $achievementCount)
-            ->orderBy('min_achievements')
-            ->get();
+            foreach ($badges as $badge) {
+                $user->badges()->attach($badge->id, ['unlocked_at' => now()]);
+            }
+
+            return $badges;
+        });
 
         foreach ($newlyUnlocked as $badge) {
-            DB::table('user_badges')->insert([
-                'user_id'     => $user->id,
-                'badge_id'    => $badge->id,
-                'unlocked_at' => now(),
-            ]);
-
             BadgeUnlocked::dispatch($badge->name, $user);
         }
     }
