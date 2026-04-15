@@ -86,9 +86,10 @@ GET /api/users/{user}/achievements
 ```json
 {
   "purchase_count": 5,
-  "unlocked_achievements": [
+  "unlocked_achievements": ["First Purchase", "5 Purchases"],
+  "unlocked_achievement_details": [
     { "name": "First Purchase", "unlocked_at": "2026-04-15T00:10:00.000000Z" },
-    { "name": "5 Purchases", "unlocked_at": "2026-04-15T00:14:00.000000Z" }
+    { "name": "5 Purchases",    "unlocked_at": "2026-04-15T00:14:00.000000Z" }
   ],
   "next_available_achievements": ["10 Purchases"],
   "current_badge": "Beginner",
@@ -97,7 +98,7 @@ GET /api/users/{user}/achievements
 }
 ```
 
-> `unlocked_achievements` returns objects rather than plain strings so the dashboard can display when each achievement was earned. The `name` field satisfies the original spec; `unlocked_at` is an additive extension.
+`unlocked_achievements` is a plain string array as specified. `unlocked_achievement_details` is an additive field that carries unlock timestamps, which the dashboard uses to display when each achievement was earned.
 
 ### Running Tests
 

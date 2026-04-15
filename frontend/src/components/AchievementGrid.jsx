@@ -32,6 +32,15 @@ export default function AchievementGrid({ unlockedRows, nextAvailable, newlyUnlo
         </span>
       </div>
 
+      {Object.keys(unlockedMap).length === 0 && (
+        <div className="achievement-empty-state">
+          <span className="achievement-empty-icon">🛍️</span>
+          <p className="achievement-empty-text">
+            Make your first purchase to start unlocking achievements
+          </p>
+        </div>
+      )}
+
       <Motion.div
         className="achievement-grid"
         variants={container}

@@ -36,6 +36,7 @@ class AchievementTest extends TestCase
             ->assertJsonStructure([
                 'purchase_count',
                 'unlocked_achievements',
+                'unlocked_achievement_details',
                 'next_available_achievements',
                 'current_badge',
                 'next_badge',
@@ -55,10 +56,17 @@ class AchievementTest extends TestCase
         $response->assertOk()
             ->assertJsonPath('purchase_count', 1)
             ->assertJsonStructure([
-                'unlocked_achievements' => [
+                'unlocked_achievement_details' => [
                     '*' => ['name', 'unlocked_at'],
                 ],
             ]);
+
+        // unlocked_achievements must be plain strings per spec
+        $names = $response->json('unlocked_achievements');
+        $this->assertIsArray($names);
+        foreach ($names as $n) {
+            $this->assertIsString($n);
+        }
     }
 
     public function test_first_purchase_unlocks_first_purchase_achievement(): void
@@ -137,9 +145,8 @@ class AchievementTest extends TestCase
 
         $data = $response->json();
 
-        $names = array_column($data['unlocked_achievements'], 'name');
-        $this->assertContains('First Purchase', $names);
-        $this->assertContains('5 Purchases', $names);
+        $this->assertContains('First Purchase', $data['unlocked_achievements']);
+        $this->assertContains('5 Purchases',    $data['unlocked_achievements']);
         $this->assertNotEmpty($data['next_available_achievements']);
     }
 

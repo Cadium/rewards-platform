@@ -28,8 +28,10 @@ export function useAchievements(userId) {
     load(userId);
   }, [load, userId]);
 
-  const unlockedNames = data?.unlocked_achievements?.map((a) => a.name) ?? [];
-  const prevNames     = prevDataRef.current?.unlocked_achievements?.map((a) => a.name) ?? [];
+  // unlocked_achievements = plain strings (spec-compliant)
+  // unlocked_achievement_details = [{name, unlocked_at}] used by the UI for timestamps
+  const unlockedNames = data?.unlocked_achievements ?? [];
+  const prevNames     = prevDataRef.current?.unlocked_achievements ?? [];
 
   const newlyUnlocked = (() => {
     if (!prevDataRef.current || !data) return [];

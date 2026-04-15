@@ -49,7 +49,8 @@ class UserAchievementController extends Controller
 
         return response()->json([
             'purchase_count'                 => $user->purchases()->count(),
-            'unlocked_achievements'          => $unlockedAchievements,
+            'unlocked_achievements'          => array_column($unlockedAchievements, 'name'),
+            'unlocked_achievement_details'   => $unlockedAchievements,
             'next_available_achievements'    => $nextAvailable,
             'current_badge'                  => $currentBadge?->name ?? 'Beginner',
             'next_badge'                     => $nextBadge?->name,

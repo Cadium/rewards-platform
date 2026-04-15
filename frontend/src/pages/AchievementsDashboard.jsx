@@ -38,6 +38,9 @@ export default function AchievementsDashboard() {
     data, loading, error, reload, newlyUnlocked, badgeUpgraded,
   } = useAchievements(selectedId);
 
+  const [amount, setAmount] = useState(500);
+  const AMOUNTS = [500, 1000, 5000];
+
   const { purchase, loading: purchasing } = usePurchase(selectedId, async () => {
     await reload();
   });
@@ -216,7 +219,7 @@ export default function AchievementsDashboard() {
               transition={{ delay: 0.2, type: 'spring', stiffness: 240, damping: 28 }}
             >
               <AchievementGrid
-                unlockedRows={data.unlocked_achievements}
+                unlockedRows={data.unlocked_achievement_details ?? []}
                 nextAvailable={data.next_available_achievements}
                 newlyUnlocked={newlyUnlocked}
               />
@@ -228,9 +231,22 @@ export default function AchievementsDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.28 }}
             >
+              <div className="amount-selector">
+                {AMOUNTS.map((a) => (
+                  <button
+                    key={a}
+                    className={`amount-chip${a === amount ? ' active' : ''}`}
+                    onClick={() => setAmount(a)}
+                    disabled={purchasing}
+                  >
+                    ₦{a.toLocaleString()}
+                  </button>
+                ))}
+              </div>
+
               <Motion.button
                 className="btn-purchase"
-                onClick={purchase}
+                onClick={() => purchase(amount)}
                 disabled={purchasing}
                 whileHover={!purchasing ? { scale: 1.04, y: -2 } : {}}
                 whileTap={!purchasing ? { scale: 0.97 } : {}}
@@ -247,7 +263,7 @@ export default function AchievementsDashboard() {
                 ) : (
                   <>
                     <span className="btn-icon">🛒</span>
-                    Simulate Purchase <span className="btn-amount">₦500</span>
+                    Simulate Purchase <span className="btn-amount">₦{amount.toLocaleString()}</span>
                   </>
                 )}
               </Motion.button>
