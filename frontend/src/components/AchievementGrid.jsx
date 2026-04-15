@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { ALL_ACHIEVEMENTS } from '../constants/loyalty';
 import AchievementCard from './AchievementCard';
 
@@ -8,12 +8,11 @@ const container = {
 };
 
 const item = {
-  hidden: { opacity: 0, y: 18 },
-  show:   { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 280, damping: 24 } },
+  hidden: { opacity: 0, scale: 0.98 },
+  show:   { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 280, damping: 24 } },
 };
 
 export default function AchievementGrid({ unlockedRows, nextAvailable, newlyUnlocked = [] }) {
-  // unlockedRows is [{name, unlocked_at}]
   const unlockedMap = Object.fromEntries((unlockedRows ?? []).map((a) => [a.name, a.unlocked_at]));
   const nextSet     = new Set(nextAvailable ?? []);
   const newSet      = new Set(newlyUnlocked);
@@ -33,23 +32,23 @@ export default function AchievementGrid({ unlockedRows, nextAvailable, newlyUnlo
         </span>
       </div>
 
-      <motion.div
+      <Motion.div
         className="achievement-grid"
         variants={container}
         initial="hidden"
         animate="show"
       >
         {ALL_ACHIEVEMENTS.map((name) => (
-          <motion.div key={name} variants={item}>
+          <Motion.div key={name} variants={item} className="achievement-grid-item">
             <AchievementCard
               name={name}
               status={getStatus(name)}
               unlockedAt={unlockedMap[name] ?? null}
               isNew={newSet.has(name)}
             />
-          </motion.div>
+          </Motion.div>
         ))}
-      </motion.div>
+      </Motion.div>
     </div>
   );
 }

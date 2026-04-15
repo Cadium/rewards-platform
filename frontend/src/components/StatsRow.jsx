@@ -1,4 +1,4 @@
-import { animate, motion, useMotionValue, useTransform } from 'framer-motion';
+import { animate, motion as Motion, useMotionValue, useTransform } from 'framer-motion';
 import { useEffect } from 'react';
 import { ALL_ACHIEVEMENTS } from '../constants/loyalty';
 
@@ -11,7 +11,7 @@ function Counter({ to }) {
     return controls.stop;
   }, [to]); // eslint-disable-line
 
-  return <motion.span>{rounded}</motion.span>;
+  return <Motion.span>{rounded}</Motion.span>;
 }
 
 export default function StatsRow({ purchaseCount, unlockedCount }) {
@@ -24,7 +24,7 @@ export default function StatsRow({ purchaseCount, unlockedCount }) {
   return (
     <div className="stats-row">
       {stats.map(({ label, value, icon }, i) => (
-        <motion.div
+        <Motion.div
           key={label}
           className="stat-card"
           initial={{ opacity: 0, y: 12 }}
@@ -36,7 +36,7 @@ export default function StatsRow({ purchaseCount, unlockedCount }) {
             <Counter to={value} />
           </span>
           <span className="stat-label">{label}</span>
-        </motion.div>
+        </Motion.div>
       ))}
     </div>
   );

@@ -6,7 +6,7 @@ A full-stack loyalty rewards system where customers earn achievements and badges
 
 ```
 rewards-platform/
-├── backend/    # Laravel 11 API
+├── backend/    # Laravel 13 API
 └── frontend/   # React + Vite customer dashboard
 ```
 
@@ -46,7 +46,7 @@ rewards-platform/
 ## Backend Setup (Laravel)
 
 ### Requirements
-- PHP 8.2+
+- PHP 8.3+
 - Composer
 
 ### Steps
@@ -66,7 +66,7 @@ php artisan key:generate
 # Run migrations
 php artisan migrate
 
-# Seed achievements and badges (and a test user)
+# Seed achievements, badges, and sample users
 php artisan db:seed
 
 # Start the development server
@@ -85,7 +85,11 @@ GET /api/users/{user}/achievements
 
 ```json
 {
-  "unlocked_achievements": ["First Purchase", "5 Purchases"],
+  "purchase_count": 5,
+  "unlocked_achievements": [
+    { "name": "First Purchase", "unlocked_at": "2026-04-15T00:10:00.000000Z" },
+    { "name": "5 Purchases", "unlocked_at": "2026-04-15T00:14:00.000000Z" }
+  ],
   "next_available_achievements": ["10 Purchases"],
   "current_badge": "Beginner",
   "next_badge": "Bronze",
@@ -148,4 +152,4 @@ cd frontend && npm run dev
 
 Then open `http://localhost:5173` in your browser.
 
-The seeder creates a test user with ID `1`. Enter `1` in the dashboard's user ID field to see the starting state.
+The seeder creates five sample users with different purchase histories so the dashboard is useful immediately after setup.

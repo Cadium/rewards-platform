@@ -1,6 +1,6 @@
 import confetti from 'canvas-confetti';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion as Motion } from 'framer-motion';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchUsers } from '../api/achievements';
 import AchievementGrid from '../components/AchievementGrid';
 import BadgeHero from '../components/BadgeHero';
@@ -42,7 +42,16 @@ export default function AchievementsDashboard() {
     await reload();
   });
 
-  // Load users on mount
+  const showToast = useCallback((message) => {
+    clearTimeout(toastTimer.current);
+    setToast(message);
+    toastTimer.current = setTimeout(() => setToast(null), 4000);
+  }, []);
+
+  const queueToast = useCallback((message) => {
+    setTimeout(() => showToast(message), 0);
+  }, [showToast]);
+
   useEffect(() => {
     fetchUsers()
       .then((list) => {
@@ -52,30 +61,25 @@ export default function AchievementsDashboard() {
       .catch(() => {});
   }, []);
 
-  // Confetti and toast on unlock events
   useEffect(() => {
     if (newlyUnlocked.length > 0) {
       fireConfetti('achievement');
-      showToast(
+      queueToast(
         newlyUnlocked.length === 1
           ? `🎉 Achievement unlocked: ${newlyUnlocked[0]}!`
           : `🎉 ${newlyUnlocked.length} achievements unlocked!`
       );
     }
-  }, [newlyUnlocked.join(',')]); // eslint-disable-line
+  }, [newlyUnlocked, queueToast]);
 
   useEffect(() => {
     if (badgeUpgraded && data) {
       setTimeout(() => fireConfetti('badge'), 300);
-      showToast(`🏅 Badge upgraded to ${data.current_badge}! +₦300 cashback!`);
+      queueToast(`🏅 Badge upgraded to ${data.current_badge}! +₦300 cashback!`);
     }
-  }, [badgeUpgraded]); // eslint-disable-line
+  }, [badgeUpgraded, data, queueToast]);
 
-  function showToast(msg) {
-    clearTimeout(toastTimer.current);
-    setToast(msg);
-    toastTimer.current = setTimeout(() => setToast(null), 4000);
-  }
+  useEffect(() => () => clearTimeout(toastTimer.current), []);
 
   const totalAchievements = 8;
   const unlockedCount     = data?.unlocked_achievements?.length ?? 0;
@@ -83,25 +87,25 @@ export default function AchievementsDashboard() {
 
   return (
     <div className="page">
-      {/* Toast */}
       <AnimatePresence>
         {toast && (
-          <motion.div
+          <Motion.div
             className="toast"
             key="toast"
+            role="status"
+            aria-live="polite"
             initial={{ opacity: 0, y: 30, x: '-50%' }}
             animate={{ opacity: 1, y: 0, x: '-50%' }}
             exit={{ opacity: 0, y: 20, x: '-50%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 28 }}
           >
             {toast}
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
 
-      {/* Header */}
       <header className="page-header">
-        <motion.div
+        <Motion.div
           className="header-brand"
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -112,10 +116,10 @@ export default function AchievementsDashboard() {
             <h1 className="header-title">Loyalty Rewards</h1>
             <p className="header-subtitle">Earn achievements. Unlock badges. Get rewarded.</p>
           </div>
-        </motion.div>
+        </Motion.div>
 
         {users.length > 0 && (
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
@@ -125,15 +129,14 @@ export default function AchievementsDashboard() {
               selectedId={selectedId}
               onChange={(id) => setSelectedId(id)}
             />
-          </motion.div>
+          </Motion.div>
         )}
       </header>
 
       <main className="page-main">
-        {/* Error state */}
         <AnimatePresence>
           {error && !loading && (
-            <motion.div
+            <Motion.div
               className="error-banner"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -141,11 +144,10 @@ export default function AchievementsDashboard() {
             >
               <span>⚠ {error}</span>
               <button className="btn-ghost" onClick={reload}>Retry</button>
-            </motion.div>
+            </Motion.div>
           )}
         </AnimatePresence>
 
-        {/* Loading skeleton */}
         {loading && !data && (
           <div className="skeleton-layout">
             <div className="skeleton-card tall" />
@@ -156,17 +158,15 @@ export default function AchievementsDashboard() {
           </div>
         )}
 
-        {/* Main content */}
         {data && (
-          <motion.div
+          <Motion.div
             className="content"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
-            {/* Top row: badge + progress */}
             <div className="top-grid">
-              <motion.div
+              <Motion.div
                 className="glass-card badge-card"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -178,10 +178,10 @@ export default function AchievementsDashboard() {
                   achievementCount={unlockedCount}
                   totalAchievements={totalAchievements}
                 />
-              </motion.div>
+              </Motion.div>
 
               <div className="right-col">
-                <motion.div
+                <Motion.div
                   className="glass-card"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -191,9 +191,9 @@ export default function AchievementsDashboard() {
                     purchaseCount={purchaseCount}
                     unlockedCount={unlockedCount}
                   />
-                </motion.div>
+                </Motion.div>
 
-                <motion.div
+                <Motion.div
                   className="glass-card"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -205,12 +205,11 @@ export default function AchievementsDashboard() {
                     unlocked={unlockedCount}
                     remaining={data.remaining_to_unlock_next_badge}
                   />
-                </motion.div>
+                </Motion.div>
               </div>
             </div>
 
-            {/* Achievement grid */}
-            <motion.div
+            <Motion.div
               className="glass-card"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -221,16 +220,15 @@ export default function AchievementsDashboard() {
                 nextAvailable={data.next_available_achievements}
                 newlyUnlocked={newlyUnlocked}
               />
-            </motion.div>
+            </Motion.div>
 
-            {/* Simulate purchase */}
-            <motion.div
+            <Motion.div
               className="cta-section"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.28 }}
             >
-              <motion.button
+              <Motion.button
                 className="btn-purchase"
                 onClick={purchase}
                 disabled={purchasing}
@@ -239,7 +237,7 @@ export default function AchievementsDashboard() {
               >
                 {purchasing ? (
                   <>
-                    <motion.span
+                    <Motion.span
                       className="btn-spinner"
                       animate={{ rotate: 360 }}
                       transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }}
@@ -252,13 +250,13 @@ export default function AchievementsDashboard() {
                     Simulate Purchase <span className="btn-amount">₦500</span>
                   </>
                 )}
-              </motion.button>
+              </Motion.button>
               <p className="cta-hint">
                 Each purchase is recorded and the full event chain runs in real time —
                 achievements unlock, badges upgrade, and ₦300 cashback is issued automatically.
               </p>
-            </motion.div>
-          </motion.div>
+            </Motion.div>
+          </Motion.div>
         )}
       </main>
     </div>

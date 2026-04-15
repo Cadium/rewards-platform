@@ -12,7 +12,6 @@ class UserAchievementController extends Controller
 {
     public function show(User $user): JsonResponse
     {
-        // Unlocked achievements with their unlock timestamps
         $unlockedRows = $user->achievements()
             ->orderBy('required_purchases')
             ->get(['achievements.id', 'achievements.name', 'user_achievements.unlocked_at']);
@@ -32,7 +31,6 @@ class UserAchievementController extends Controller
 
         $achievementCount = count($unlockedAchievements);
 
-        // Current badge = highest unlocked (latest unlocked_at wins)
         $currentBadge = $user->badges()
             ->orderByPivot('unlocked_at', 'desc')
             ->first();
@@ -41,7 +39,6 @@ class UserAchievementController extends Controller
             $currentBadge = Badge::where('min_achievements', 0)->first();
         }
 
-        // Next badge = the lowest badge whose threshold is still above the user's count
         $nextBadge = Badge::where('min_achievements', '>', $achievementCount)
             ->orderBy('min_achievements')
             ->first();

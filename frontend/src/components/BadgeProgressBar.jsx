@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { BADGE_META } from '../constants/loyalty';
 
 export default function BadgeProgressBar({ currentBadge, nextBadge, unlocked, remaining }) {
@@ -20,14 +20,14 @@ export default function BadgeProgressBar({ currentBadge, nextBadge, unlocked, re
       </div>
 
       <div className="progress-track">
-        <motion.div
+        <Motion.div
           className="progress-fill"
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           <span className="progress-shimmer" />
-        </motion.div>
+        </Motion.div>
       </div>
 
       <div className="progress-footer">

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { ACHIEVEMENT_META } from '../constants/loyalty';
 
 function formatUnlockedAt(ts) {
@@ -32,16 +32,15 @@ export default function AchievementCard({ name, status, unlockedAt, isNew }) {
   };
 
   return (
-    <motion.div
+    <Motion.div
       className={`achievement-card achievement-${status}`}
-      layout
-      initial={{ opacity: 0, y: 16, scale: 0.92 }}
+      initial={{ opacity: 0, scale: 0.96 }}
       animate={variants[status]}
       transition={{ type: 'spring', stiffness: 300, damping: 28 }}
       whileHover={status !== 'locked' ? { scale: 1.04, y: -2 } : {}}
     >
       {isNew && (
-        <motion.div
+        <Motion.div
           className="achievement-new-burst"
           initial={{ scale: 0, opacity: 1 }}
           animate={{ scale: 2.5, opacity: 0 }}
@@ -59,30 +58,30 @@ export default function AchievementCard({ name, status, unlockedAt, isNew }) {
       <div className="achievement-card-status">
         {status === 'unlocked' && (
           <>
-            <motion.span
+            <Motion.span
               className="check-mark"
               initial={isNew ? { scale: 0, rotate: -45 } : { scale: 1 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 400, damping: 15 }}
             >
               ✓
-            </motion.span>
+            </Motion.span>
             {formatUnlockedAt(unlockedAt) && (
               <p className="achievement-unlocked-at">{formatUnlockedAt(unlockedAt)}</p>
             )}
           </>
         )}
         {status === 'next' && (
-          <motion.span
+          <Motion.span
             className="next-tag"
             animate={{ opacity: [1, 0.55, 1] }}
             transition={{ duration: 1.6, repeat: Infinity }}
           >
             NEXT
-          </motion.span>
+          </Motion.span>
         )}
         {status === 'locked' && <span className="lock-icon">🔒</span>}
       </div>
-    </motion.div>
+    </Motion.div>
   );
 }

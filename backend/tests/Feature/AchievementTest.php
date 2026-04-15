@@ -34,11 +34,30 @@ class AchievementTest extends TestCase
 
         $response->assertOk()
             ->assertJsonStructure([
+                'purchase_count',
                 'unlocked_achievements',
                 'next_available_achievements',
                 'current_badge',
                 'next_badge',
                 'remaining_to_unlock_next_badge',
+            ]);
+    }
+
+    public function test_api_returns_unlock_timestamps_for_earned_achievements(): void
+    {
+        $user       = User::factory()->create();
+        $purchase   = Purchase::create(['user_id' => $user->id, 'amount' => 500]);
+
+        PurchaseMade::dispatch($purchase);
+
+        $response = $this->getJson("/api/users/{$user->id}/achievements");
+
+        $response->assertOk()
+            ->assertJsonPath('purchase_count', 1)
+            ->assertJsonStructure([
+                'unlocked_achievements' => [
+                    '*' => ['name', 'unlocked_at'],
+                ],
             ]);
     }
 
@@ -161,5 +180,45 @@ class AchievementTest extends TestCase
             });
 
         (new \App\Listeners\ProcessCashback())->handle($event);
+    }
+
+    public function test_purchase_endpoint_rejects_invalid_amount(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->postJson("/api/users/{$user->id}/purchases", [
+            'amount' => 0,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['amount']);
+    }
+
+    public function test_max_tier_user_has_no_next_badge(): void
+    {
+        $user = User::factory()->create();
+
+        $achievements = Achievement::orderBy('required_purchases')->get();
+        foreach ($achievements as $achievement) {
+            \Illuminate\Support\Facades\DB::table('user_achievements')->insert([
+                'user_id'        => $user->id,
+                'achievement_id' => $achievement->id,
+                'unlocked_at'    => now(),
+            ]);
+        }
+
+        $goldBadge = Badge::where('name', 'Gold')->firstOrFail();
+        \Illuminate\Support\Facades\DB::table('user_badges')->insert([
+            'user_id'     => $user->id,
+            'badge_id'    => $goldBadge->id,
+            'unlocked_at' => now(),
+        ]);
+
+        $response = $this->getJson("/api/users/{$user->id}/achievements");
+
+        $response->assertOk()
+            ->assertJsonPath('current_badge', 'Gold')
+            ->assertJsonPath('next_badge', null)
+            ->assertJsonPath('remaining_to_unlock_next_badge', 0);
     }
 }

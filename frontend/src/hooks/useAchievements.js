@@ -13,20 +13,21 @@ export function useAchievements(userId) {
     setError(null);
     try {
       const result = await fetchUserAchievements(id);
-      prevDataRef.current = data;
-      setData(result);
+      setData((current) => {
+        prevDataRef.current = current;
+        return result;
+      });
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [data]);
+  }, []);
 
   useEffect(() => {
     load(userId);
-  }, [userId]); // eslint-disable-line
+  }, [load, userId]);
 
-  // unlocked_achievements is now [{name, unlocked_at}] — derive name list
   const unlockedNames = data?.unlocked_achievements?.map((a) => a.name) ?? [];
   const prevNames     = prevDataRef.current?.unlocked_achievements?.map((a) => a.name) ?? [];
 
