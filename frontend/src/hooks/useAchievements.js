@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchUserAchievements } from '../api/achievements';
 
 export function useAchievements(userId) {
-  const [data, setData]           = useState(null);
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState(null);
-  const prevDataRef               = useRef(null);
+  const [data, setData]       = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState(null);
+  const prevDataRef           = useRef(null);
 
   const load = useCallback(async (id) => {
     if (!id) return;
@@ -26,10 +26,14 @@ export function useAchievements(userId) {
     load(userId);
   }, [userId]); // eslint-disable-line
 
+  // unlocked_achievements is now [{name, unlocked_at}] — derive name list
+  const unlockedNames = data?.unlocked_achievements?.map((a) => a.name) ?? [];
+  const prevNames     = prevDataRef.current?.unlocked_achievements?.map((a) => a.name) ?? [];
+
   const newlyUnlocked = (() => {
     if (!prevDataRef.current || !data) return [];
-    const prev = new Set(prevDataRef.current.unlocked_achievements);
-    return data.unlocked_achievements.filter((a) => !prev.has(a));
+    const prev = new Set(prevNames);
+    return unlockedNames.filter((n) => !prev.has(n));
   })();
 
   const badgeUpgraded =
@@ -43,5 +47,6 @@ export function useAchievements(userId) {
     reload: () => load(userId),
     newlyUnlocked,
     badgeUpgraded,
+    unlockedNames,
   };
 }

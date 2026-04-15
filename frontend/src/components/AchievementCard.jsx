@@ -1,24 +1,33 @@
 import { motion } from 'framer-motion';
 import { ACHIEVEMENT_META } from '../constants/loyalty';
 
-export default function AchievementCard({ name, status, isNew }) {
+function formatUnlockedAt(ts) {
+  if (!ts) return null;
+  try {
+    return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }).format(new Date(ts));
+  } catch {
+    return null;
+  }
+}
+
+export default function AchievementCard({ name, status, unlockedAt, isNew }) {
   const meta = ACHIEVEMENT_META[name] ?? { icon: '🏅', label: '' };
 
   const variants = {
     unlocked: {
-      background: 'rgba(16,185,129,0.12)',
-      borderColor: 'rgba(16,185,129,0.35)',
+      background: 'rgba(16,185,129,0.11)',
+      borderColor: 'rgba(16,185,129,0.32)',
       opacity: 1,
     },
     next: {
-      background: 'rgba(139,92,246,0.1)',
-      borderColor: 'rgba(139,92,246,0.5)',
+      background: 'rgba(212,113,26,0.09)',
+      borderColor: 'rgba(212,113,26,0.45)',
       opacity: 1,
     },
     locked: {
       background: 'rgba(255,255,255,0.02)',
-      borderColor: 'rgba(255,255,255,0.07)',
-      opacity: 0.5,
+      borderColor: 'rgba(255,255,255,0.06)',
+      opacity: 0.45,
     },
   };
 
@@ -49,20 +58,25 @@ export default function AchievementCard({ name, status, isNew }) {
 
       <div className="achievement-card-status">
         {status === 'unlocked' && (
-          <motion.span
-            className="check-mark"
-            initial={isNew ? { scale: 0, rotate: -45 } : { scale: 1 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-          >
-            ✓
-          </motion.span>
+          <>
+            <motion.span
+              className="check-mark"
+              initial={isNew ? { scale: 0, rotate: -45 } : { scale: 1 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+            >
+              ✓
+            </motion.span>
+            {formatUnlockedAt(unlockedAt) && (
+              <p className="achievement-unlocked-at">{formatUnlockedAt(unlockedAt)}</p>
+            )}
+          </>
         )}
         {status === 'next' && (
           <motion.span
             className="next-tag"
-            animate={{ opacity: [1, 0.5, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
+            animate={{ opacity: [1, 0.55, 1] }}
+            transition={{ duration: 1.6, repeat: Infinity }}
           >
             NEXT
           </motion.span>

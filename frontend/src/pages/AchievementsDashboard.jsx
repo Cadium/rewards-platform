@@ -23,7 +23,7 @@ function fireConfetti(type = 'achievement') {
           particleCount: 80,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ['#6366f1', '#8b5cf6', '#a855f7', '#ffffff'],
+          colors: ['#D4711A', '#F5A623', '#fbbf24', '#ffffff'],
         };
   confetti(opts);
 }
@@ -32,7 +32,6 @@ export default function AchievementsDashboard() {
   const [users, setUsers]           = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [toast, setToast]           = useState(null);
-  const [purchaseCount, setPurchaseCount] = useState(0);
   const toastTimer                  = useRef(null);
 
   const {
@@ -40,7 +39,6 @@ export default function AchievementsDashboard() {
   } = useAchievements(selectedId);
 
   const { purchase, loading: purchasing } = usePurchase(selectedId, async () => {
-    setPurchaseCount((c) => c + 1);
     await reload();
   });
 
@@ -53,14 +51,6 @@ export default function AchievementsDashboard() {
       })
       .catch(() => {});
   }, []);
-
-  // Sync purchase count from API data
-  useEffect(() => {
-    if (data) {
-      // derive total purchases from API context — not returned directly,
-      // but we keep a local optimistic counter for display
-    }
-  }, [data]);
 
   // Confetti and toast on unlock events
   useEffect(() => {
@@ -89,6 +79,7 @@ export default function AchievementsDashboard() {
 
   const totalAchievements = 8;
   const unlockedCount     = data?.unlocked_achievements?.length ?? 0;
+  const purchaseCount     = data?.purchase_count ?? 0;
 
   return (
     <div className="page">
@@ -132,10 +123,7 @@ export default function AchievementsDashboard() {
             <UserSelector
               users={users}
               selectedId={selectedId}
-              onChange={(id) => {
-                setSelectedId(id);
-                setPurchaseCount(0);
-              }}
+              onChange={(id) => setSelectedId(id)}
             />
           </motion.div>
         )}
@@ -229,7 +217,7 @@ export default function AchievementsDashboard() {
               transition={{ delay: 0.2, type: 'spring', stiffness: 240, damping: 28 }}
             >
               <AchievementGrid
-                unlocked={data.unlocked_achievements}
+                unlockedRows={data.unlocked_achievements}
                 nextAvailable={data.next_available_achievements}
                 newlyUnlocked={newlyUnlocked}
               />
