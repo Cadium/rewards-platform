@@ -31,6 +31,8 @@ export default function AchievementCard({ name, status, unlockedAt, isNew }) {
     },
   };
 
+  const unlockedDate = status === 'unlocked' ? formatUnlockedAt(unlockedAt) : null;
+
   return (
     <Motion.div
       className={`achievement-card achievement-${status}`}
@@ -66,8 +68,8 @@ export default function AchievementCard({ name, status, unlockedAt, isNew }) {
             >
               ✓
             </Motion.span>
-            {formatUnlockedAt(unlockedAt) && (
-              <p className="achievement-unlocked-at">{formatUnlockedAt(unlockedAt)}</p>
+            {unlockedDate && (
+              <p className="achievement-unlocked-at">{unlockedDate}</p>
             )}
           </>
         )}

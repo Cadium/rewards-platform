@@ -43,11 +43,13 @@ export function useAchievements(userId) {
     data && prevDataRef.current &&
     data.current_badge !== prevDataRef.current.current_badge;
 
+  const reload = useCallback(() => load(userId), [load, userId]);
+
   return {
     data,
     loading,
     error,
-    reload: () => load(userId),
+    reload,
     newlyUnlocked,
     badgeUpgraded,
     unlockedNames,

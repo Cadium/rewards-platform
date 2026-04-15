@@ -7,8 +7,11 @@ import BadgeHero from '../components/BadgeHero';
 import BadgeProgressBar from '../components/BadgeProgressBar';
 import StatsRow from '../components/StatsRow';
 import UserSelector from '../components/UserSelector';
+import { ALL_ACHIEVEMENTS } from '../constants/loyalty';
 import { useAchievements } from '../hooks/useAchievements';
 import { usePurchase } from '../hooks/usePurchase';
+
+const PURCHASE_AMOUNTS = [500, 1000, 5000];
 
 function fireConfetti(type = 'achievement') {
   const opts =
@@ -38,8 +41,7 @@ export default function AchievementsDashboard() {
     data, loading, error, reload, newlyUnlocked, badgeUpgraded,
   } = useAchievements(selectedId);
 
-  const [amount, setAmount] = useState(500);
-  const AMOUNTS = [500, 1000, 5000];
+  const [amount, setAmount] = useState(PURCHASE_AMOUNTS[0]);
 
   const { purchase, loading: purchasing } = usePurchase(selectedId, async () => {
     await reload();
@@ -84,7 +86,7 @@ export default function AchievementsDashboard() {
 
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
-  const totalAchievements = 8;
+  const totalAchievements = ALL_ACHIEVEMENTS.length;
   const unlockedCount     = data?.unlocked_achievements?.length ?? 0;
   const purchaseCount     = data?.purchase_count ?? 0;
 
@@ -232,7 +234,7 @@ export default function AchievementsDashboard() {
               transition={{ delay: 0.28 }}
             >
               <div className="amount-selector">
-                {AMOUNTS.map((a) => (
+                {PURCHASE_AMOUNTS.map((a) => (
                   <button
                     key={a}
                     className={`amount-chip${a === amount ? ' active' : ''}`}
