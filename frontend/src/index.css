@@ -488,3 +488,41 @@ body { min-height: 100vh; background: var(--bg-0); }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 99px; }
+
+/* ─── Mobile (≤ 480px) ───────────────────────────────────────── */
+@media (max-width: 480px) {
+  .page { padding: 0 12px 60px; }
+
+  .page-header { padding: 24px 0 20px; gap: 16px; }
+
+  .header-logo  { width: 40px; height: 40px; font-size: 1.2rem; }
+  .header-title { font-size: 1.25rem; }
+
+  .glass-card { padding: 16px; }
+
+  /* Badge ring scales down so it doesn't eat the whole card */
+  .badge-ring-wrap  { width: 100px; height: 100px; }
+  .badge-icon-wrap  { width: 76px;  height: 76px; }
+  .badge-emoji      { font-size: 2.3rem; }
+  .badge-tier-name  { font-size: 1.55rem; }
+
+  /* Stats: keep 3 cols but tighten the values */
+  .stats-row        { gap: 8px; }
+  .stat-card        { padding: 12px 6px; }
+  .stat-value       { font-size: 1.25rem; }
+
+  /* Achievement cards: 2 cols is fine at 480px; 1 col only below 400px */
+  .achievement-card { padding: 12px 8px; min-height: 170px; }
+
+  /* CTA button: full-width and less padding */
+  .btn-purchase {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 20px;
+    font-size: .95rem;
+  }
+
+  /* User chips: smaller text, allow wrapping to fill width */
+  .user-chip      { font-size: .78rem; padding: 6px 10px 6px 6px; }
+  .user-chip-avatar { width: 22px; height: 22px; }
+}

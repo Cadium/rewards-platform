@@ -18,7 +18,7 @@ export function useAchievements(userId) {
         return result;
       });
     } catch (err) {
-      setError(err.message);
+      setError(err.message ?? String(err));
     } finally {
       setLoading(false);
     }

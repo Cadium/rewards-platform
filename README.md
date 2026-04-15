@@ -97,6 +97,8 @@ GET /api/users/{user}/achievements
 }
 ```
 
+> `unlocked_achievements` returns objects rather than plain strings so the dashboard can display when each achievement was earned. The `name` field satisfies the original spec; `unlocked_at` is an additive extension.
+
 ### Running Tests
 
 ```bash
